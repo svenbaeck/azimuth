@@ -19,6 +19,9 @@ param appGatewayIpAddress string = '10.0.1.100'
 param keyVaultSubnetName string = 'keyVaultSubnet'
 param keyVaultAddressPrefix string = '10.0.2.100/24'
 
+param containerSubnetName string = 'ContainerAccountSubnet'
+param containerAddressPrefix string = '10.0.4.100/24'
+
 param privateDnsZoneSubscription string
 param privateDnsZoneResourceGroup string
 
@@ -26,8 +29,8 @@ param appDeliverySubscriptionId string
 
 param certificates array = []
 
-module linkPrivateDnsZone './modules/linkPrivateDnsZone.bicep' = {
-  name: 'link-private-dns-zone-deployment'
+module linkPrivateDnsZoneKv './modules/linkPrivateDnsZone.bicep' = {
+  name: 'link-private-kv-dns-zone-deployment'
   scope: resourceGroup(privateDnsZoneSubscription, privateDnsZoneResourceGroup)
   params: {
     privateDnsZoneName: 'privatelink.vaultcore.azure.net'
@@ -55,5 +58,10 @@ module appDelivery './modules/appGatewayEnvironment.bicep' = {
     keyVaultPrivateDnsZoneSubscription: privateDnsZoneSubscription
     keyVaultPrivateDnsZoneResourceGroup: privateDnsZoneResourceGroup
     certificates: certificates
+    containerSubnetName: containerSubnetName
+    containerAddressPrefix: containerAddressPrefix
   }
+  dependsOn: [
+    linkPrivateDnsZoneKv
+  ]
 }
